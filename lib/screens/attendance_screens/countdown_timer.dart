@@ -5,10 +5,10 @@ class CountdownTimerWidget extends StatefulWidget {
   const CountdownTimerWidget({super.key});
 
   @override
-  _CountdownTimerWidgetState createState() => _CountdownTimerWidgetState();
+  CountdownTimerWidgetState createState() => CountdownTimerWidgetState();
 }
 
-class _CountdownTimerWidgetState extends State<CountdownTimerWidget> {
+class CountdownTimerWidgetState extends State<CountdownTimerWidget> {
   late Timer _timer;
   late DateTime _targetTime;
   String _countdown = "";

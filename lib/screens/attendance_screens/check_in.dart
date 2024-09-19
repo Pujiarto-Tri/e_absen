@@ -11,10 +11,10 @@ class CheckIn extends StatefulWidget {
   const CheckIn({super.key});
 
   @override
-  _CheckInState createState() => _CheckInState();
+  CheckInState createState() => CheckInState();
 }
 
-class _CheckInState extends State<CheckIn> {
+class CheckInState extends State<CheckIn> {
   LatLng _currentLocation = const LatLng(0, 0);
   final Location _location = Location();
   final MapController _mapController = MapController();
