@@ -32,6 +32,7 @@ class MyApp extends StatelessWidget {
           ? DashboardScreen.routeName
           : LoginScreen.routeName,
       routes: {
+        SignUpScreen.routeName: (context) => const SignUpScreen(),
         LoginScreen.routeName: (context) => const LoginScreen(),
         DashboardScreen.routeName: (context) => DashboardScreen(
             username: username ?? ''), // Safe fallback if username is null
