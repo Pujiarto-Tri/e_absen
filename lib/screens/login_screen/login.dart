@@ -27,7 +27,7 @@ class LoginScreenState extends State<LoginScreen> {
       // Make POST request to your Django backend
       final response = await http.post(
         Uri.parse(
-            'eabsendjangobackend-production.up.railway.app/api/login/'), // Replace with your actual backend URL
+            'https://eabsendjangobackend-production.up.railway.app/api/login/'), // Replace with your actual backend URL
         body: jsonEncode({
           'email': email,
           'password': password,
