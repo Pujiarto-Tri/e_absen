@@ -49,10 +49,9 @@ class SignUpScreenState extends State<SignUpScreen> {
         uri,
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
-          'user_id': {
+          'user': {
             'email': _emailController.text,
             'password': _passwordController.text,
-            'password2': _confirmPasswordController.text,
           }
         }),
       );
@@ -85,6 +84,7 @@ class SignUpScreenState extends State<SignUpScreen> {
       // Handle exceptions
       if (mounted) {
         _showSnackBar('Error: $e', context);
+        // print('$e');
       }
     } finally {
       if (mounted) {
