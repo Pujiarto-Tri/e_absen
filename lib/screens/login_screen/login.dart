@@ -1,6 +1,7 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
 import 'package:geolocator/geolocator.dart';
 import 'sign_up.dart';
 
@@ -14,49 +15,74 @@ class LoginScreen extends StatefulWidget {
 }
 
 class LoginScreenState extends State<LoginScreen> {
-  final FirebaseAuth _auth = FirebaseAuth.instance;
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool _obscurePassword = true;
 
   Future<void> _login() async {
+    final String email = _emailController.text;
+    final String password = _passwordController.text;
+
     try {
-      UserCredential userCredential = await _auth.signInWithEmailAndPassword(
-        email: _emailController.text,
-        password: _passwordController.text,
+      // Make POST request to your Django backend
+      final response = await http.post(
+        Uri.parse(
+            'http://your-django-backend-url/login/'), // Replace with your actual backend URL
+        body: jsonEncode({
+          'email': email,
+          'password': password,
+        }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
       );
 
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      await prefs.setBool('isLoggedIn', true);
-      await prefs.setString('username', userCredential.user!.email!);
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final String accessToken = data['access'];
+        final String refreshToken = data['refresh'];
 
-      if (mounted) {
-        Navigator.pushReplacementNamed(
-          context,
-          '/dashboard',
-          arguments: userCredential.user?.email,
-        );
+        // Store the tokens and login state in shared preferences
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.setBool('isLoggedIn', true);
+        await prefs.setString('accessToken', accessToken);
+        await prefs.setString('refreshToken', refreshToken);
+        await prefs.setString('username', email);
+
+        // Navigate to the dashboard
+        if (mounted) {
+          Navigator.pushReplacementNamed(
+            context,
+            '/dashboard',
+            arguments: email,
+          );
+        }
+      } else {
+        // Handle login error
+        final error = jsonDecode(response.body)['error'];
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Failed to login: $error')),
+          );
+        }
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to login: $e')),
+          SnackBar(content: Text('Error: $e')),
         );
       }
     }
 
+    // Optionally, handle location permission and retrieval here
     try {
       Position position = await _getCurrentLocation();
-      // Now you have the location, you can use it as needed
       SnackBar(
         content:
             Text('User location: ${position.latitude}, ${position.longitude}'),
         duration: const Duration(seconds: 3),
       );
-
-      // Continue with login logic
     } catch (e) {
-      // Handle errors
       SnackBar(
         content: Text('Error getting location: $e'),
         duration: const Duration(seconds: 3),
@@ -65,13 +91,11 @@ class LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _requestLocationPermission() async {
-    // Check if location services are enabled
     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
       return Future.error('Location services are disabled.');
     }
 
-    // Check for location permissions
     LocationPermission permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
@@ -81,14 +105,13 @@ class LoginScreenState extends State<LoginScreen> {
     }
 
     if (permission == LocationPermission.deniedForever) {
-      // Permissions are denied forever, handle appropriately
       return Future.error(
           'Location permissions are permanently denied, we cannot request permissions.');
     }
   }
 
   Future<Position> _getCurrentLocation() async {
-    await _requestLocationPermission(); // Ensure permission is granted
+    await _requestLocationPermission();
     Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high);
     return position;
