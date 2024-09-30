@@ -1,10 +1,6 @@
 import 'dart:convert';
-import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
-import 'package:path/path.dart';
-import 'package:async/async.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SignUpScreen extends StatefulWidget {
@@ -20,87 +16,75 @@ class SignUpScreenState extends State<SignUpScreen> {
   final _formKey = GlobalKey<FormState>();
 
   // Controllers
-  final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
 
   // Variables
-  File? _avatar;
   bool _isLoading = false;
   bool _obscurePassword = true;
+  bool _obscureConfirmPassword = true;
 
   @override
-  void initState() {
-    super.initState();
+  void dispose() {
+    // Dispose controllers to avoid memory leaks
+    _emailController.dispose();
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
+    super.dispose();
   }
 
-  Future<void> _pickImage() async {
-    final ImagePicker picker = ImagePicker();
-    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
-
-    if (image != null && mounted) {
-      setState(() {
-        _avatar = File(image.path);
-      });
-    }
-  }
-
-  Future<void> _signUp() async {
+  Future<void> _signUp(BuildContext context) async {
     if (!_formKey.currentState!.validate()) return;
-    if (_avatar == null) {
-      _showSnackBar('Please upload an avatar');
-      return;
-    }
 
     setState(() {
       _isLoading = true;
     });
 
     try {
-      var uri = Uri.parse('http://your-backend-url/api/register/');
-      var request = http.MultipartRequest('POST', uri);
-
-      request.fields['user_id.username'] = _usernameController.text;
-      request.fields['user_id.email'] = _emailController.text;
-      request.fields['user_id.password'] = _passwordController.text;
-      request.fields['user_name'] = _usernameController.text;
-      request.fields['is_active'] = 'true';
-
-      // Attach avatar
-      if (_avatar != null) {
-        var stream =
-            http.ByteStream(DelegatingStream.typed(_avatar!.openRead()));
-        var length = await _avatar!.length();
-        var multipartFile = http.MultipartFile('user_avatar', stream, length,
-            filename: basename(_avatar!.path));
-        request.files.add(multipartFile);
-      }
-
-      var response = await request.send();
-      var responseData = await http.Response.fromStream(response);
+      var uri = Uri.parse(
+          'https://eabsendjangobackend-production.up.railway.app/api/register/');
+      var response = await http.post(
+        uri,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'user_id': {
+            'email': _emailController.text,
+            'password': _passwordController.text,
+            'password2': _confirmPasswordController.text,
+          }
+        }),
+      );
 
       if (mounted) {
         if (response.statusCode == 201) {
-          // Registration successful
-          _showSnackBar('Registration successful');
+          // Try to parse the JSON response
+          try {
+            // Registration successful
+            _showSnackBar('Registration successful', context);
 
-          // Optionally, save login state
-          SharedPreferences prefs = await SharedPreferences.getInstance();
-          await prefs.setBool('isLoggedIn', true);
-          await prefs.setString('username', _emailController.text);
+            // Optionally, save login state
+            SharedPreferences prefs = await SharedPreferences.getInstance();
+            await prefs.setBool('isLoggedIn', true);
+            await prefs.setString('email', _emailController.text);
 
-          // Navigate to home or login screen
-          Navigator.pushReplacementNamed(context as BuildContext, '/login');
+            // Navigate to home or login screen
+            Navigator.pushReplacementNamed(context, '/login');
+          } catch (e) {
+            _showSnackBar(
+                'Registration successful, but response parsing failed',
+                context);
+          }
         } else {
           // Registration failed
-          var error = jsonDecode(responseData.body);
-          _showSnackBar('Registration failed: $error');
+          _showSnackBar('Registration failed: ${response.body}', context);
         }
       }
     } catch (e) {
       // Handle exceptions
       if (mounted) {
-        _showSnackBar('Error: $e');
+        _showSnackBar('Error: $e', context);
       }
     } finally {
       if (mounted) {
@@ -111,8 +95,8 @@ class SignUpScreenState extends State<SignUpScreen> {
     }
   }
 
-  void _showSnackBar(String message) {
-    ScaffoldMessenger.of(context as BuildContext).showSnackBar(
+  void _showSnackBar(String message, BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(message)),
     );
   }
@@ -143,41 +127,6 @@ class SignUpScreenState extends State<SignUpScreen> {
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 40),
-                        GestureDetector(
-                          onTap: _pickImage,
-                          child: CircleAvatar(
-                            radius: 60,
-                            backgroundColor:
-                                Theme.of(context).primaryColor.withOpacity(0.1),
-                            backgroundImage:
-                                _avatar != null ? FileImage(_avatar!) : null,
-                            child: _avatar == null
-                                ? Icon(
-                                    Icons.camera_alt,
-                                    size: 50,
-                                    color: Theme.of(context).primaryColor,
-                                  )
-                                : null,
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-                        TextFormField(
-                          controller: _usernameController,
-                          decoration: InputDecoration(
-                            labelText: 'Username',
-                            prefixIcon: const Icon(Icons.person_outline),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please enter a username';
-                            }
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 16),
                         TextFormField(
                           controller: _emailController,
                           decoration: InputDecoration(
@@ -227,9 +176,40 @@ class SignUpScreenState extends State<SignUpScreen> {
                             return null;
                           },
                         ),
+                        const SizedBox(height: 16),
+                        TextFormField(
+                          controller: _confirmPasswordController,
+                          decoration: InputDecoration(
+                            labelText: 'Confirm Password',
+                            prefixIcon: const Icon(Icons.lock_outline),
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                _obscureConfirmPassword
+                                    ? Icons.visibility_off
+                                    : Icons.visibility,
+                              ),
+                              onPressed: () {
+                                setState(() {
+                                  _obscureConfirmPassword =
+                                      !_obscureConfirmPassword;
+                                });
+                              },
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          obscureText: _obscureConfirmPassword,
+                          validator: (value) {
+                            if (value != _passwordController.text) {
+                              return 'Passwords do not match';
+                            }
+                            return null;
+                          },
+                        ),
                         const SizedBox(height: 24),
                         ElevatedButton(
-                          onPressed: _signUp,
+                          onPressed: () => _signUp(context),
                           style: ElevatedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 16),
                             shape: RoundedRectangleBorder(
