@@ -19,7 +19,7 @@ class LoginScreenState extends State<LoginScreen> {
   final TextEditingController _passwordController = TextEditingController();
   bool _obscurePassword = true;
 
-  Future<void> _login() async {
+  Future<void> login() async {
     final String email = _emailController.text;
     final String password = _passwordController.text;
 
@@ -41,6 +41,7 @@ class LoginScreenState extends State<LoginScreen> {
         final data = jsonDecode(response.body);
         final String accessToken = data['access'];
         final String refreshToken = data['refresh'];
+        final String employeeName = data['user']['name'] ?? 'User';
 
         // Store the tokens and login state in shared preferences
         SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -48,13 +49,14 @@ class LoginScreenState extends State<LoginScreen> {
         await prefs.setString('accessToken', accessToken);
         await prefs.setString('refreshToken', refreshToken);
         await prefs.setString('username', email);
+        await prefs.setString('username', employeeName);
 
         // Navigate to the dashboard
         if (mounted) {
           Navigator.pushReplacementNamed(
             context,
             '/dashboard',
-            arguments: email,
+            arguments: employeeName,
           );
         }
       } else {
@@ -179,7 +181,7 @@ class LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 24),
                 ElevatedButton(
-                  onPressed: _login,
+                  onPressed: login,
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
