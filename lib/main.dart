@@ -1,11 +1,9 @@
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'screens/screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
 
   SharedPreferences prefs = await SharedPreferences.getInstance();
   bool isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
@@ -39,6 +37,7 @@ class MyApp extends StatelessWidget {
         ProfileScreen.routeName: (context) => const ProfileScreen(),
         CheckIn.routeName: (context) => const CheckIn(),
         CheckOut.routeName: (context) => const CheckOut(),
+        EditProfileScreen.routeName: (context) => const EditProfileScreen()
       },
     );
   }

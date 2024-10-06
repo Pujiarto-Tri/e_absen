@@ -4,3 +4,4 @@ export 'profile_screen/profile.dart';
 export 'attendance_screens/check_in.dart';
 export 'attendance_screens/check_out.dart';
 export 'login_screen/sign_up.dart';
+export 'profile_screen/edit_profile.dart';

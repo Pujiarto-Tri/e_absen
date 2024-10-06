@@ -1,6 +1,4 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class ProfileScreen extends StatelessWidget {
   static const routeName = '/profile';
@@ -65,14 +63,27 @@ class ProfileScreen extends StatelessWidget {
             // Add other widgets as needed
             const SizedBox(height: 20),
             ElevatedButton(
-              onPressed: () async {
-                SharedPreferences prefs = await SharedPreferences.getInstance();
-                await prefs.setBool('isLoggedIn', false);
-
-                // Log out from Firebase Auth
-                await FirebaseAuth.instance.signOut();
-
-                // Navigate to login screen
+              onPressed: () {
+                Navigator.pushReplacementNamed(context, '/edit-profile');
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue,
+                padding: const EdgeInsets.symmetric(vertical: 15),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16.0),
+                ),
+              ),
+              child: const Text(
+                'Edit Profile',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
                 Navigator.pushReplacementNamed(context, '/login');
               },
               style: ElevatedButton.styleFrom(
