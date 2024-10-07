@@ -7,16 +7,16 @@ Future<void> main() async {
 
   SharedPreferences prefs = await SharedPreferences.getInstance();
   bool isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
-  String? username = prefs.getString('username');
+  String? accessToken = prefs.getString('accessToken');
 
-  runApp(MyApp(isLoggedIn: isLoggedIn, username: username));
+  runApp(MyApp(isLoggedIn: isLoggedIn, accessToken: accessToken));
 }
 
 class MyApp extends StatelessWidget {
   final bool isLoggedIn;
-  final String? username;
+  final String? accessToken;
 
-  const MyApp({super.key, required this.isLoggedIn, this.username});
+  const MyApp({super.key, required this.isLoggedIn, this.accessToken});
 
   @override
   Widget build(BuildContext context) {
@@ -26,14 +26,15 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      initialRoute: isLoggedIn && username != null
+      initialRoute: isLoggedIn && accessToken != null
           ? DashboardScreen.routeName
           : LoginScreen.routeName,
       routes: {
         SignUpScreen.routeName: (context) => const SignUpScreen(),
         LoginScreen.routeName: (context) => const LoginScreen(),
         DashboardScreen.routeName: (context) => DashboardScreen(
-            username: username ?? ''), // Safe fallback if username is null
+            accessToken:
+                accessToken ?? ''), // Safe fallback if username is null
         ProfileScreen.routeName: (context) => const ProfileScreen(),
         CheckIn.routeName: (context) => const CheckIn(),
         CheckOut.routeName: (context) => const CheckOut(),

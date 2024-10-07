@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'package:geolocator/geolocator.dart';
 import 'sign_up.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class LoginScreen extends StatefulWidget {
   static const routeName = '/login';
@@ -18,6 +19,7 @@ class LoginScreenState extends State<LoginScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool _obscurePassword = true;
+  final storage = FlutterSecureStorage();
 
   Future<void> login() async {
     final String email = _emailController.text;
@@ -50,6 +52,7 @@ class LoginScreenState extends State<LoginScreen> {
         await prefs.setString('refreshToken', refreshToken);
         await prefs.setString('username', email);
         await prefs.setString('username', employeeName);
+        await storage.write(key: 'access_token', value: accessToken);
 
         // Navigate to the dashboard
         if (mounted) {
