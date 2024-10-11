@@ -35,7 +35,7 @@ class DashboardScreenState extends State<DashboardScreen> {
     // API call to fetch employee data (PUT request)
     final response = await http.put(
       Uri.parse(
-          'https://eabsendjangobackend-production.up.railway.app/api/employee/profile'),
+          'https://eabsendjangobackend-production.up.railway.app/api/employee/profile/'),
       headers: {
         'Authorization': 'Bearer $accessToken',
         'Content-Type': 'application/json',

@@ -17,7 +17,7 @@ class EditProfileScreenState extends State<EditProfileScreen> {
 
   // Controllers
   final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _emailController = TextEditingController();
+  // final TextEditingController _emailController = TextEditingController();
   final TextEditingController _payoutController = TextEditingController();
 
   // Variables
@@ -35,7 +35,7 @@ class EditProfileScreenState extends State<EditProfileScreen> {
   @override
   void dispose() {
     _nameController.dispose();
-    _emailController.dispose();
+    // _emailController.dispose();
     _payoutController.dispose();
     super.dispose();
   }
@@ -63,7 +63,7 @@ class EditProfileScreenState extends State<EditProfileScreen> {
         var userData = json.decode(response.body);
         setState(() {
           _nameController.text = userData['employee_name'] ?? '';
-          _emailController.text = userData['user_id']['email'] ?? '';
+          // _emailController.text = userData['user_id']['email'] ?? '';
           _payoutController.text = userData['user_payout'] ?? '';
           _selectedRole = userData['user_role']?['role_id']?.toString();
           _selectedShift = userData['user_shift']?['id']?.toString();
@@ -169,19 +169,19 @@ class EditProfileScreenState extends State<EditProfileScreen> {
                             return null;
                           },
                         ),
-                        const SizedBox(height: 16),
-                        TextFormField(
-                          controller: _emailController,
-                          decoration: InputDecoration(
-                            labelText: 'Email',
-                            prefixIcon: const Icon(Icons.email_outlined),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          keyboardType: TextInputType.emailAddress,
-                          readOnly: true, // Email should not be editable
-                        ),
+                        // const SizedBox(height: 16),
+                        // TextFormField(
+                        //   controller: _emailController,
+                        //   decoration: InputDecoration(
+                        //     labelText: 'Email',
+                        //     prefixIcon: const Icon(Icons.email_outlined),
+                        //     border: OutlineInputBorder(
+                        //       borderRadius: BorderRadius.circular(12),
+                        //     ),
+                        //   ),
+                        //   keyboardType: TextInputType.emailAddress,
+                        //   readOnly: true, // Email should not be editable
+                        // ),
                         const SizedBox(height: 16),
                         TextFormField(
                           controller: _payoutController,
