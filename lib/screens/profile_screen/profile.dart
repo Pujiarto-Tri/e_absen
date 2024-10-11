@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ProfileScreen extends StatelessWidget {
   static const routeName = '/profile';
@@ -83,7 +84,13 @@ class ProfileScreen extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             ElevatedButton(
-              onPressed: () {
+              onPressed: () async {
+                // Clear authentication data from SharedPreferences
+                SharedPreferences prefs = await SharedPreferences.getInstance();
+                await prefs.remove('isLoggedIn');
+                await prefs.remove('accessToken');
+
+                // Redirect to the login screen
                 Navigator.pushReplacementNamed(context, '/login');
               },
               style: ElevatedButton.styleFrom(

@@ -5,8 +5,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class EditProfileScreen extends StatefulWidget {
   static const routeName = '/edit-profile';
+  final String accessToken;
 
-  const EditProfileScreen({super.key});
+  const EditProfileScreen({super.key, required this.accessToken});
 
   @override
   EditProfileScreenState createState() => EditProfileScreenState();
@@ -17,41 +18,36 @@ class EditProfileScreenState extends State<EditProfileScreen> {
 
   // Controllers
   final TextEditingController _nameController = TextEditingController();
-  // final TextEditingController _emailController = TextEditingController();
   final TextEditingController _payoutController = TextEditingController();
 
   // Variables
   bool _isLoading = false;
-  String? _selectedRole;
-  String? _selectedShift;
-  String? _selectedLocation;
 
   @override
   void initState() {
     super.initState();
-    _loadUserData();
+    _fetchEmployeeData();
   }
 
   @override
   void dispose() {
     _nameController.dispose();
-    // _emailController.dispose();
     _payoutController.dispose();
     super.dispose();
   }
 
-  Future<void> _loadUserData() async {
+  Future<void> _fetchEmployeeData() async {
     setState(() {
       _isLoading = true;
     });
 
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
-      String? token = prefs.getString('token');
+      String? token = prefs.getString('access_token') ?? widget.accessToken;
 
       var uri = Uri.parse(
           'https://eabsendjangobackend-production.up.railway.app/api/employee/profile/');
-      var response = await http.get(
+      var response = await http.put(
         uri,
         headers: {
           'Content-Type': 'application/json',
@@ -63,14 +59,10 @@ class EditProfileScreenState extends State<EditProfileScreen> {
         var userData = json.decode(response.body);
         setState(() {
           _nameController.text = userData['employee_name'] ?? '';
-          // _emailController.text = userData['user_id']['email'] ?? '';
           _payoutController.text = userData['user_payout'] ?? '';
-          _selectedRole = userData['user_role']?['role_id']?.toString();
-          _selectedShift = userData['user_shift']?['id']?.toString();
-          _selectedLocation = userData['user_location']?['id']?.toString();
         });
       } else {
-        _showSnackBar('Failed to load user data', context);
+        _showSnackBar('Failed to load user data: ${response.body}', context);
       }
     } catch (e) {
       _showSnackBar('Error: $e', context);
@@ -90,7 +82,7 @@ class EditProfileScreenState extends State<EditProfileScreen> {
 
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
-      String? token = prefs.getString('token');
+      String? token = prefs.getString('access_token') ?? widget.accessToken;
 
       var uri = Uri.parse(
           'https://eabsendjangobackend-production.up.railway.app/api/employee/profile/');
@@ -103,29 +95,20 @@ class EditProfileScreenState extends State<EditProfileScreen> {
         body: jsonEncode({
           'employee_name': _nameController.text,
           'user_payout': _payoutController.text,
-          'user_role': _selectedRole,
-          'user_shift': _selectedShift,
-          'user_location': _selectedLocation,
         }),
       );
 
-      if (mounted) {
-        if (response.statusCode == 200) {
-          _showSnackBar('Profile updated successfully', context);
-        } else {
-          _showSnackBar('Update failed: ${response.body}', context);
-        }
+      if (response.statusCode == 200) {
+        _showSnackBar('Profile updated successfully', context);
+      } else {
+        _showSnackBar('Update failed: ${response.body}', context);
       }
     } catch (e) {
-      if (mounted) {
-        _showSnackBar('Error: $e', context);
-      }
+      _showSnackBar('Error: $e', context);
     } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
@@ -169,19 +152,6 @@ class EditProfileScreenState extends State<EditProfileScreen> {
                             return null;
                           },
                         ),
-                        // const SizedBox(height: 16),
-                        // TextFormField(
-                        //   controller: _emailController,
-                        //   decoration: InputDecoration(
-                        //     labelText: 'Email',
-                        //     prefixIcon: const Icon(Icons.email_outlined),
-                        //     border: OutlineInputBorder(
-                        //       borderRadius: BorderRadius.circular(12),
-                        //     ),
-                        //   ),
-                        //   keyboardType: TextInputType.emailAddress,
-                        //   readOnly: true, // Email should not be editable
-                        // ),
                         const SizedBox(height: 16),
                         TextFormField(
                           controller: _payoutController,
@@ -200,26 +170,6 @@ class EditProfileScreenState extends State<EditProfileScreen> {
                             return null;
                           },
                         ),
-                        const SizedBox(height: 16),
-                        // Add dropdowns for Role, Shift, and Location here
-                        // You'll need to fetch the options from your API
-                        // and populate these dropdowns
-                        // Example:
-                        // DropdownButtonFormField(
-                        //   value: _selectedRole,
-                        //   items: [DropdownMenuItem(child: Text('Role 1'), value: '1')],
-                        //   onChanged: (value) {
-                        //     setState(() {
-                        //       _selectedRole = value as String?;
-                        //     });
-                        //   },
-                        //   decoration: InputDecoration(
-                        //     labelText: 'Role',
-                        //     border: OutlineInputBorder(
-                        //       borderRadius: BorderRadius.circular(12),
-                        //     ),
-                        //   ),
-                        // ),
                         const SizedBox(height: 24),
                         ElevatedButton(
                           onPressed: () => _updateProfile(context),

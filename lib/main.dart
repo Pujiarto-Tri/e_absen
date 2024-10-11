@@ -38,7 +38,8 @@ class MyApp extends StatelessWidget {
         ProfileScreen.routeName: (context) => const ProfileScreen(),
         CheckIn.routeName: (context) => const CheckIn(),
         CheckOut.routeName: (context) => const CheckOut(),
-        EditProfileScreen.routeName: (context) => const EditProfileScreen()
+        EditProfileScreen.routeName: (context) =>
+            EditProfileScreen(accessToken: accessToken ?? '')
       },
     );
   }
