@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -33,7 +34,7 @@ class DashboardScreenState extends State<DashboardScreen> {
     await prefs.setString('access_token', accessToken);
 
     // API call to fetch employee data (PUT request)
-    final response = await http.put(
+    final response = await http.get(
       Uri.parse(
           'https://eabsendjangobackend-production.up.railway.app/api/employee/profile/'),
       headers: {
@@ -41,6 +42,11 @@ class DashboardScreenState extends State<DashboardScreen> {
         'Content-Type': 'application/json',
       },
     );
+
+    if (kDebugMode) {
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
+    }
 
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
