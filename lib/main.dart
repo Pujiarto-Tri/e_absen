@@ -33,13 +33,14 @@ class MyApp extends StatelessWidget {
         SignUpScreen.routeName: (context) => const SignUpScreen(),
         LoginScreen.routeName: (context) => const LoginScreen(),
         DashboardScreen.routeName: (context) => DashboardScreen(
-            accessToken:
-                accessToken ?? ''), // Safe fallback if username is null
+              accessToken: accessToken ?? '',
+            ),
         ProfileScreen.routeName: (context) => const ProfileScreen(),
         CheckIn.routeName: (context) => const CheckIn(),
         CheckOut.routeName: (context) => const CheckOut(),
-        EditProfileScreen.routeName: (context) =>
-            EditProfileScreen(accessToken: accessToken ?? '')
+        EditProfileScreen.routeName: (context) => EditProfileScreen(
+              accessToken: accessToken ?? '',
+            ),
       },
     );
   }

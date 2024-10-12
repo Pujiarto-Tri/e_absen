@@ -27,7 +27,7 @@ class DashboardScreenState extends State<DashboardScreen> {
   }
 
   Future<void> _fetchEmployeeData() async {
-    final prefs = await SharedPreferences.getInstance();
+    var prefs = await SharedPreferences.getInstance();
     final accessToken = widget.accessToken;
 
     // Store the token for future use
@@ -43,9 +43,20 @@ class DashboardScreenState extends State<DashboardScreen> {
       },
     );
 
+    if (accessToken.isEmpty) {
+      if (kDebugMode) {
+        print('Access token is missing or invalid');
+      }
+      setState(() {
+        employeeData = 'Invalid or missing access token';
+      });
+      return;
+    }
+
     if (kDebugMode) {
       print('Response status: ${response.statusCode}');
       print('Response body: ${response.body}');
+      print('Access Token: $accessToken');
     }
 
     if (response.statusCode == 200) {

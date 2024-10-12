@@ -90,8 +90,13 @@ class ProfileScreen extends StatelessWidget {
                 await prefs.remove('isLoggedIn');
                 await prefs.remove('accessToken');
 
-                // Redirect to the login screen
-                Navigator.pushReplacementNamed(context, '/login');
+                // Navigate to the login screen and remove all previous routes
+                Navigator.pushNamedAndRemoveUntil(
+                  context,
+                  '/login', // Login route
+                  (Route<dynamic> route) =>
+                      false, // Removes all previous routes
+                );
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.red,
@@ -107,7 +112,7 @@ class ProfileScreen extends StatelessWidget {
                   fontSize: 16,
                 ),
               ),
-            ),
+            )
           ],
         ),
       ),
